@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mojo Jojo's Pomodoro</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #fff;
+      background-image: radial-gradient(
+        circle at center,
+        rgba(0, 0, 0, 0.2) 1.5px,
+        transparent 1.5px
+      );
+      background-size: 10px 10px;
+      color: #222;
+    }
+    .timer {
+      font-size: 4rem;
+      font-variant-numeric: tabular-nums;
+      margin: 1rem 0;
+    }
+    .phase {
+      font-size: 1rem;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+    }
+    .phase.work { color: #e94560; }
+    .phase.break { color: #0f9b8e; }
+    button {
+      font-size: 1rem;
+      padding: 0.6rem 1.4rem;
+      margin: 0 0.3rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #16213e;
+      color: #eee;
+    }
+    button:hover { background: #0f3460; }
+    button.primary { background: #e94560; color: white; }
+    button.primary:hover { background: #c73e54; }
+    h1 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.92);
+      padding: 2rem 3rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .timer {
+      color: #111;
+      font-weight: 700;
+    }
+    .intention-input {
+      width: 100%;
+      max-width: 280px;
+      padding: 0.5rem 0.75rem;
+      margin: 0.5rem 0 1rem 0;
+      font-size: 0.95rem;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 8px;
+      color: #222;
+    }
+    .intention-input::placeholder { color: #888; }
+    .intention-display {
+      margin: 0.5rem 0 1rem 0;
+      font-size: 0.95rem;
+      color: #555;
+      font-style: italic;
+      min-height: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Mojo Jojo's Pomodoro</h1>
+    <input type="text" id="intention" class="intention-input" placeholder="What's your focus for this session?">
+    <div id="intentionDisplay" class="intention-display" style="display: none;"></div>
+    <div class="phase work" id="phase">Work</div>
+    <div class="timer" id="timer">25:00</div>
+    <div>
+      <button class="primary" id="start">Start</button>
+      <button id="pause">Pause</button>
+      <button id="reset">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    const WORK_MIN = 25;
+    const BREAK_MIN = 5;
+
+    let secondsLeft = WORK_MIN * 60;
+    let isWork = true;
+    let isRunning = false;
+    let interval = null;
+
+    const timerEl = document.getElementById('timer');
+    const phaseEl = document.getElementById('phase');
+    const intentionInput = document.getElementById('intention');
+    const intentionDisplay = document.getElementById('intentionDisplay');
+    const startBtn = document.getElementById('start');
+    const pauseBtn = document.getElementById('pause');
+    const resetBtn = document.getElementById('reset');
+
+    function display() {
+      const m = Math.floor(secondsLeft / 60);
+      const s = secondsLeft % 60;
+      timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      phaseEl.textContent = isWork ? 'Work' : 'Break';
+      phaseEl.className = 'phase ' + (isWork ? 'work' : 'break');
+    }
+
+    function tick() {
+      if (secondsLeft <= 0) {
+        isWork = !isWork;
+        secondsLeft = (isWork ? WORK_MIN : BREAK_MIN) * 60;
+      } else {
+        secondsLeft--;
+      }
+      display();
+    }
+
+    startBtn.onclick = () => {
+      if (isRunning) return;
+      isRunning = true;
+      intentionDisplay.textContent = intentionInput.value.trim() || 'No intention set';
+      intentionDisplay.style.display = 'block';
+      intentionInput.style.display = 'none';
+      interval = setInterval(tick, 1000);
+    };
+
+    pauseBtn.onclick = () => {
+      isRunning = false;
+      clearInterval(interval);
+      intentionInput.style.display = 'block';
+      intentionDisplay.style.display = 'none';
+    };
+
+    resetBtn.onclick = () => {
+      isRunning = false;
+      clearInterval(interval);
+      isWork = true;
+      secondsLeft = WORK_MIN * 60;
+      intentionInput.style.display = 'block';
+      intentionDisplay.style.display = 'none';
+      display();
+    };
+
+    display();
+  </script>
+</body>
+</html>
